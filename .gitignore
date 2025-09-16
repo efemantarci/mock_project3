@@ -1,0 +1,25 @@
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+tmp/
+temp/
+
+# Database credentials (when added later)
+*credentials*
+*config*
