@@ -24,7 +24,13 @@ ChessDB is a comprehensive tournament management application that handles chess 
 
 ## Setup Instructions
 
-*Framework selection and setup instructions will be added in subsequent development phases.*
+Run these lines : 
+
+```
+pip install -r requirements.txt
+cd backend
+python app.py
+```
 
 ## Development Status
 
