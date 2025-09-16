@@ -3,6 +3,8 @@
 .idea/
 *.swp
 *.swo
+.mvn
+target
 
 # OS
 .DS_Store
