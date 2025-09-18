@@ -130,3 +130,53 @@ CREATE TABLE `Match` (
   UNIQUE KEY Arbiter_Conflict (assigned_arbiter_username,time_slot,date),
   CONSTRAINT Different_Teams CHECK (black_player_team <> white_player_team)
 );
+
+
+DELIMITER $$
+CREATE TRIGGER prevent_match_conflicts
+BEFORE INSERT ON `Match`
+FOR EACH ROW
+BEGIN
+  DECLARE conflict_count INT DEFAULT 0;
+
+  -- location check
+  SELECT COUNT(*) INTO conflict_count 
+  FROM `Match`
+  WHERE date = NEW.date
+  AND table_id = NEW.table_id
+  AND hall_id = NEW.hall_id
+  AND (time_slot = NEW.time_slot - 1 OR time_slot = NEW.time_slot + 1);
+  
+  IF conflict_count > 0 THEN 
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Match conflicts with existing match';
+  END IF;
+  -- player conflict 
+  SELECT COUNT(*) INTO conflict_count 
+  FROM `Match`
+  WHERE date = NEW.date
+  AND (black_player = NEW.black_player 
+  OR black_player = NEW.white_player
+  OR white_player = NEW.black_player
+  OR white_player = NEW.white_player)
+  AND 
+  AND (time_slot = NEW.time_slot - 1 OR time_slot = NEW.time_slot + 1);
+  
+  IF conflict_count > 0 THEN 
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Player has a time slot conflict';
+  END IF;
+
+  -- arbiter conflict
+  SELECT COUNT(*) INTO conflict_count 
+  FROM `Match`
+  WHERE date = NEW.date
+  AND assigned_arbiter_username = NEW.assigned_arbiter_username
+  AND (time_slot = NEW.time_slot - 1 OR time_slot = NEW.time_slot + 1);
+  
+  IF conflict_count > 0 THEN 
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Arbiter has a time slot conflict';
+  END IF;
+END$$
+DELIMITER ; 
