@@ -37,7 +37,19 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
         setError('Registration failed');
       }
     } catch (error: any) {
-      setError('Registration failed: ' + (error.response?.data || error.message));
+      if (error.response?.status === 409) {
+        // Conflict - username already exists
+        setError(error.response.data || 'Username already exists. Please choose a different username.');
+      } else if (error.response?.status === 500) {
+        // Server error
+        setError(error.response.data || 'Registration failed due to server error. Please try again.');
+      } else if (error.response?.data) {
+        // Other HTTP errors with response data
+        setError(error.response.data);
+      } else {
+        // Network or other errors
+        setError('Registration failed: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
