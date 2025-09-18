@@ -6,6 +6,7 @@ import com.CMPE321.backend.dto.UserCreateRequest;
 import com.CMPE321.backend.dto.UserLoginRequest;
 import com.CMPE321.backend.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class LoginController {
          return response.getBody();
     }
     @PostMapping("/create")
-    User createPage(@RequestBody UserCreateRequest request){
+    ResponseEntity<?> createPage(@RequestBody UserCreateRequest request){
         System.out.printf("Got request with username : %s pass : %s", request.getUsername(), request.getPassword());
         ResponseEntity<User> response = authService.createUser(
                 request.getUsername(),
@@ -37,6 +38,17 @@ public class LoginController {
                 request.getSurname(),
                 request.getNationality()
         );
-        return response.getBody();
+
+        if (response.getStatusCode() == HttpStatus.CONFLICT) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Username '" + request.getUsername() + "' is already taken. Please choose a different username.");
+        }
+
+        if (response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Registration failed due to server error. Please try again.");
+        }
+
+        return ResponseEntity.ok(response.getBody());
     }
 }

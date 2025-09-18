@@ -35,8 +35,19 @@ public class AuthService {
     }
 
     public ResponseEntity<User> createUser(String username,String password, String name, String surname, String nationality){
+        // Check if username already exists
+        Optional<User> existingUser = userRepository.getUser(username);
+        if(existingUser.isPresent()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+
         User newUser = new User(username,getHashedPassword(password),name,surname,nationality);
-        userRepository.save(newUser);
+        boolean saved = userRepository.save(newUser);
+
+        if(!saved){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
         return ResponseEntity.ok(newUser);
     }
 }
